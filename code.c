@@ -29,7 +29,7 @@ void T1_program(void)
 {
 	T1CON = 0;		/* Stops the Timer1 and reset control reg	*/
 	TMR1  = 0;		/* Clear contents of the timer register	*/
-	PR1   = 0x9c40;		/* PR1=40000 Load the Period register with the value of 1ms	*/
+	PR1   = 0x3E80;		/* PR1=40000 Load the Period register with the value of 1ms	*/
 	IPC0bits.T1IP = 5;	/* Set Timer1 priority to 1		*/
 	IFS0bits.T1IF = 0;	/* Clear the Timer1 interrupt status flag	*/
 	IEC0bits.T1IE = 1;	/* Enable Timer1 interrupts		*/
@@ -187,8 +187,9 @@ void PWM_init(void)
 TASK(Task1)
 {
 	/* Blink leds every 1 second */
-	put_LCD_initial_message();
+	//put_LCD_initial_message();
 	LATAbits.LATA0^=1;
+	my_time++;				// Increment global variable my_time (every second)
 }
 
 //TASK(Task2)
@@ -220,7 +221,7 @@ int main(void)
 {
 	/* Clock setup for 40MIPS */
 	/* PLL Configuration */
-	PLLFBD=38; 				// M=40
+	PLLFBD=14; 				// M=16
 	CLKDIVbits.PLLPOST=0; 	// N1=2
 	CLKDIVbits.PLLPRE=0; 	// N2=2
 	OSCTUN=0; 				// FRC clock use
@@ -231,9 +232,11 @@ int main(void)
 	T1_program();
 
 	/* Init leds */
+
 	TRISAbits.TRISA0=0;
 	TRISAbits.TRISA1=0;
 	TRISAbits.TRISA2=0;
+
 
 	/* Init push button */
 	TRISDbits.TRISD6=1;
@@ -248,7 +251,8 @@ int main(void)
 
 
 	/* Program cyclic alarms which will fire after an initial offset, and after that periodically */
-	SetRelAlarm(Alarm1, 1000,  1000);
+	exec_time_task1=1000;
+	SetRelAlarm(Alarm1, 1000,  5000);
 
 	 /* Forever loop: background activities (if any) should go here */
 	for (;;);
